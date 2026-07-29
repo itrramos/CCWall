@@ -1,0 +1,71 @@
+# CCWall — example compose file for CasaOS / ZimaOS / generic Docker hosts.
+# Uses a prebuilt image tag; build one locally with:  docker compose build
+# CasaOS: Apps → ⋮ → Install a customized app → paste this file.
+
+services:
+  ccwall:
+    image: ccwall:1.2.0
+    container_name: ccwall
+    restart: unless-stopped
+    ports:
+      - target: 5599
+        published: "5599"
+        protocol: tcp
+    volumes:
+      # The container runs as UID 1000 (non-root). If the host directory is
+      # root-owned, fix it once with:  chown -R 1000:1000 /DATA/AppData/ccwall
+      - type: bind
+        source: /DATA/AppData/ccwall
+        target: /app/data
+    environment:
+      PORT: "5599"
+      DATA_DIR: /app/data
+      TZ: Etc/UTC
+      LOG_LEVEL: info
+      TRUST_PROXY: "false"
+      MAX_UPLOAD_SIZE_MB: "200"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:5599/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    x-casaos:
+      envs:
+        - container: TZ
+          description:
+            en_us: Container time zone
+        - container: MAX_UPLOAD_SIZE_MB
+          description:
+            en_us: Maximum media upload size in MB
+      ports:
+        - container: "5599"
+          description:
+            en_us: Web interface port
+      volumes:
+        - container: /app/data
+          description:
+            en_us: CCWall data (database, uploads, backups)
+
+x-casaos:
+  architectures:
+    - amd64
+    - arm64
+  main: ccwall
+  author: CCWall
+  category: Utilities
+  description:
+    en_us: Self-hosted wallboard portal — build slide playlists and run them full-screen on TVs and kiosks.
+  developer: CCWall
+  icon: ""
+  tagline:
+    en_us: Wallboard Portal
+  title:
+    en_us: CCWall
+  index: /
+  port_map: "5599"
+  scheme: http

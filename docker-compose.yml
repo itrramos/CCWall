@@ -1,0 +1,32 @@
+services:
+  ccwall:
+    build: .
+    image: ccwall:1.2.0
+    container_name: ccwall
+    restart: unless-stopped
+    ports:
+      - "5599:5599"
+    volumes:
+      # The container runs as UID 1000 (non-root). If Docker creates this
+      # directory as root, fix it once with:  chown -R 1000:1000 ./data
+      - ./data:/app/data
+    environment:
+      - PORT=5599
+      - DATA_DIR=/app/data
+      - TZ=Etc/UTC
+      - LOG_LEVEL=info
+      - TRUST_PROXY=false
+      - MAX_UPLOAD_SIZE_MB=200
+      # Optional: set your own secret; otherwise one is generated and stored
+      # in /app/data/session-secret on first start.
+      # - SESSION_SECRET=change-me-to-a-long-random-string
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:5599/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
