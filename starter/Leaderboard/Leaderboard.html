@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard</title>
+  <style>
+    body, html {
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      overflow: hidden;
+      user-select: none;
+	  background-color: #3e3636; /* Change this to your desired background color */
+    }
+
+    .sr-only {
+      position: absolute;
+      pointer-events: none;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      color: transparent;
+    }
+
+    input {
+      display: none;  
+    }
+
+    .slide {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: 1; /* Ensure slide is above the background */
+      transform: translateX(-100%);
+      transition-duration: .4s;
+      opacity: 1;
+    }
+
+    input:checked ~ .slide {
+      transform: translateX(100%);
+    }
+
+    input:checked + .slide {
+      transform: translateX(0);
+      opacity: 1;
+	  z-index: 2; /* Ensure the current slide is on top */
+    }
+
+    .iframe-content {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <input type="radio" id="trigger1" name="slider">
+  <div class="slide">
+    <iframe src="http://10.20.0.147:5123/totalorders2.html" frameborder="0" class="iframe-content"></iframe>
+  </div>
+
+  <input type="radio" id="trigger2" name="slider" checked autofocus>
+  <div class="slide">
+    <iframe src="http://10.20.0.147:5123/ndd2.html" frameborder="0" class="iframe-content"></iframe>
+  </div>
+
+  <input type="radio" id="trigger3" name="slider">
+  <div class="slide">
+    <iframe src="http://10.20.0.147:5123/upsell2.html" frameborder="0" class="iframe-content"></iframe>
+  </div>
+
+  <input type="radio" id="trigger4" name="slider">
+  <div class="slide">
+    <iframe src="http://10.20.0.147:5123/vip2.html" frameborder="0" class="iframe-content"></iframe>
+  </div>
+
+  <input type="radio" id="trigger5" name="slider">
+  <div class="slide">
+    <iframe src="http://nyx.hstv.local:5123/vip3.html" frameborder="0" class="iframe-content"></iframe>
+  </div>
+  
+    <input type="radio" id="trigger6" name="slider">
+  <div class="slide">
+    <iframe src="announcements.html" frameborder="0" class="iframe-content"></iframe>
+  </div>
+  
+    <input type="radio" id="trigger7" name="slider">
+  <div class="slide">
+    <iframe src="http://10.20.0.147:5123/donations.html" frameborder="0" class="iframe-content"></iframe>
+  </div>
+
+<input type="radio" id="trigger8" name="slider">
+  <div class="slide">
+    <iframe src="http://10.20.0.147:5123/mtdvip.html" frameborder="0" class="iframe-content"></iframe>
+  </div>
+  
+  <input type="radio" id="trigger9" name="slider">
+  <div class="slide">
+    <iframe src="http://10.20.0.147:5123/mtddaily.html" frameborder="0" class="iframe-content"></iframe>
+  </div>
+
+  <script>
+    const triggers = document.querySelectorAll('input[name="slider"]');
+    const iframes = document.querySelectorAll('.iframe-content');
+    let currentIndex = 0;
+
+    const switchSlide = () => {
+      triggers[currentIndex].checked = false;
+      currentIndex = (currentIndex + 1) % triggers.length;
+      triggers[currentIndex].checked = true;
+
+      if (currentIndex === 0) {
+        refreshIframes();
+      }
+    };
+
+    const refreshIframes = () => {
+      iframes.forEach(iframe => {
+        const src = iframe.src;
+        iframe.src = '';
+        iframe.src = src;
+      });
+    };
+
+    setInterval(switchSlide, 20000);
+	
+	// Keep-alive function to prevent session from expiring
+    const keepAlive = () => {
+      fetch('/keep-alive-endpoint', { method: 'GET', credentials: 'include' })
+        .then(response => {
+          if (!response.ok) {
+            console.error('Keep-alive request failed');
+          }
+        })
+        .catch(error => {
+          console.error('Keep-alive request error:', error);
+        });
+    };
+
+    // Call keepAlive every 5 minutes
+    setInterval(keepAlive, 300000); // 300000 ms = 5 minutes
+  </script>
+</body>
+</html>
